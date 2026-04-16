@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Valideur Sans Contact</title>
+
+<style>
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #0b1220;
+    color: white;
+    height: 100vh;
+}
+
+/* PAGE 1 */
+#home {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+}
+
+.header {
+    text-align: center;
+    padding-top: 50px;
+}
+
+.logo {
+    width: 110px;
+    height: 110px;
+    margin: auto;
+}
+
+.text {
+    text-align: center;
+    margin-top: 30px;
+}
+
+.text h1 {
+    font-size: 22px;
+}
+
+.text p {
+    opacity: 0.8;
+}
+
+.clock {
+    margin-top: 10px;
+    color: #00ffcc;
+}
+
+/* bouton bas */
+.footer {
+    margin-top: auto;
+    padding: 20px;
+}
+
+button {
+    width: 100%;
+    padding: 15px;
+    font-size: 18px;
+    border: none;
+    border-radius: 10px;
+    background: #1f8ef1;
+    color: white;
+}
+
+/* PAGE 2 */
+#ticket {
+    display: none;
+    height: 100vh;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    flex-direction: column;
+    position: relative;
+}
+
+/* 🔥 texte plus gros */
+.big {
+    font-size: 48px;
+    font-weight: bold;
+}
+
+.small {
+    margin-top: 25px;
+    opacity: 0.95;
+    font-size: 24px;
+    line-height: 1.6;
+}
+
+.bottom {
+    position: absolute;
+    bottom: 60px;
+    width: 100%;
+    text-align: center;
+    opacity: 0.9;
+    font-size: 18px;
+}
+
+/* animation fade */
+.fade {
+    animation: fade 0.4s ease;
+}
+
+@keyframes fade {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+</style>
+</head>
+
+<body>
+
+<!-- PAGE 1 -->
+<div id="home">
+
+    <div class="header">
+
+        <!-- LOGO NFC -->
+        <svg class="logo" viewBox="0 0 100 100">
+            <circle cx="50" cy="50" r="40" stroke="#1f8ef1" stroke-width="5" fill="none"/>
+            <path d="M30 40 Q50 20 70 40" stroke="#1f8ef1" stroke-width="4" fill="none"/>
+            <path d="M35 50 Q50 35 65 50" stroke="#1f8ef1" stroke-width="4" fill="none"/>
+            <path d="M40 60 Q50 50 60 60" stroke="#1f8ef1" stroke-width="4" fill="none"/>
+        </svg>
+
+    </div>
+
+    <div class="text">
+        <h1>Bonjour, bienvenue</h1>
+        <p>Vous pouvez valider !</p>
+        <p class="clock" id="clock"></p>
+    </div>
+
+    <div class="footer">
+        <button onclick="validate()">Scanner</button>
+    </div>
+
+</div>
+
+<!-- PAGE 2 -->
+<div id="ticket">
+
+    <div class="big">Parfait ! Bon voyage !!</div>
+
+    <div class="small">
+        1 Carte voyage pass<br><br>
+        Arrêt : <span id="location">Chargement...</span><br>
+        Heure de validation : <span id="time"></span>
+    </div>
+
+    <div class="bottom">
+        Transport validé ✔
+    </div>
+
+</div>
+
+<script>
+
+/* 🔊 AUDIO FIABLE iPHONE */
+let audioCtx = null;
+
+function initAudio() {
+    if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+}
+
+function beep() {
+    initAudio();
+
+    const oscillator = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+
+    oscillator.connect(gain);
+    gain.connect(audioCtx.destination);
+
+    oscillator.type = "sine";
+    oscillator.frequency.value = 800;
+
+    gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+
+    oscillator.start();
+    oscillator.stop(audioCtx.currentTime + 0.15);
+}
+
+/* HORLOGE */
+function updateClock() {
+    const now = new Date();
+    document.getElementById("clock").innerText =
+        now.toLocaleTimeString("fr-FR");
+}
+setInterval(updateClock, 1000);
+updateClock();
+
+let savedLocation = "Inconnue";
+
+/* GPS */
+if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(pos => {
+        savedLocation =
+            pos.coords.latitude.toFixed(4) +
+            ", " +
+            pos.coords.longitude.toFixed(4);
+    });
+}
+
+/* VALIDATION */
+function validate() {
+
+    // 🔊 bip
+    beep();
+
+    // switch page
+    document.getElementById("home").style.display = "none";
+    document.getElementById("ticket").style.display = "flex";
+    document.getElementById("ticket").classList.add("fade");
+
+    const now = new Date();
+    document.getElementById("time").innerText =
+        now.toLocaleTimeString("fr-FR");
+
+    document.getElementById("location").innerText =
+        savedLocation;
+
+    // retour auto 3 sec
+    setTimeout(() => {
+        document.getElementById("ticket").style.display = "none";
+        document.getElementById("home").style.display = "flex";
+    }, 3000);
+}
+
+</script>
+
+</body>
+</html>
